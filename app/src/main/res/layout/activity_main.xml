@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <ImageView android:id="@+id/imageViewPicture"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="100dp"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:src="@drawable/ic_baseline_broken_image_24"/>
+
+    <ImageButton android:id="@+id/imageButtonTakePicture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/imageViewPicture"
+        app:layout_constraintStart_toStartOf="@id/imageViewPicture"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="32dp"
+        android:src="@drawable/ic_baseline_photo_camera_24"
+        android:onClick="openCamera"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/imageViewPicture"
+        app:layout_constraintEnd_toEndOf="@id/imageViewPicture"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="32dp"
+        android:src="@drawable/ic_baseline_image_search_24"
+        android:onClick="openGallery"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
