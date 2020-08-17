@@ -7,17 +7,17 @@ import android.Manifest;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -44,36 +44,56 @@ public class MainActivity extends AppCompatActivity {
 
     public void openCamera(View view) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED ||
+            if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED &&
                     checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ){
                 String[] permission = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
                 requestPermissions(permission, PERMISSION_CODE);
-            }else{
-                openCamera();
-            }
+            }else
+                if(checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED){
+                    String[] permission = {Manifest.permission.CAMERA};
+                    requestPermissions(permission, PERMISSION_CODE);
+                }else
+                    if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED ){
+                        String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                        requestPermissions(permission, PERMISSION_CODE);
+                    }else
+                        openCamera();
         }
     }
 
     public void openGallery(View view) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if(checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
+                String[] permission = {Manifest.permission.READ_EXTERNAL_STORAGE};
+                requestPermissions(permission, PERMISSION_CODE);
+            }else{
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, OPEN_GALLERY_CODE);
+            }
+        }*/
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, OPEN_GALLERY_CODE);
     }
 
     private void openCamera(){
-
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE,"Nova imagem");
-        values.put(MediaStore.Images.Media.DESCRIPTION,"descrição");
-        image_uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values);
-
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,image_uri);
-
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            ContentValues values = new ContentValues();
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            values.put(MediaStore.Images.Media.TITLE,"aulaGaleria_"+timeStamp+"_");
+            values.put(MediaStore.Images.Media.DESCRIPTION,"imagem capturada pelo aplicativo Aula Galeria");
+            image_uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values);
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,image_uri);
             startActivityForResult(takePictureIntent, TAKE_PICTURE_CODE);
         } else {
             Toast.makeText(this, "Dispositivo não suporta abrir camera em aplicações externas", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        mediaScanIntent.setData(image_uri);
+        this.sendBroadcast(mediaScanIntent);
     }
 
     @Override
@@ -95,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == TAKE_PICTURE_CODE && resultCode == RESULT_OK){
             imageViewPicture.setImageURI(image_uri);
+            galleryAddPic();
         }else
             if(requestCode == OPEN_GALLERY_CODE && resultCode == RESULT_OK){
                 image_uri = data.getData();
